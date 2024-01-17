@@ -1,24 +1,23 @@
 from os import system
-from turtle import clear
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import PySimpleGUI as sg
+import time
+from getpass import getpass
 # from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.webdriver.support import expected_conditions as ec
-import time
 # strftime(%d) iespejams vajag ar "%d"
 
 # Payload ievade
 usr = input("Lūdzu ievadīt lietotājvārdu: ")
-pwd = input("Lūdzu ievadīt paroli: ")
+pwd = getpass(prompt="Lūdzu ievadīt paroli: ")
 system('clear')
 
+# Sākuma lapas atvēršana
 service = Service()
 option = webdriver.ChromeOptions()
 driver = webdriver.Chrome(service=service, options=option)
-
-# Sākuma lapas atvēršana
 url = "https://estudijas.rtu.lv/"
 driver.get(url)
 time.sleep(2)
@@ -32,12 +31,30 @@ find = driver.find_element(By.ID, "IDToken2")
 find.send_keys(pwd)
 find = driver.find_element(By.NAME, "Login.Submit")
 find.click()
+find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
+find.click()
 
 # Izvilkšana
-find = find = driver.find_element(By.CLASS_NAME, "day-number")
-day = find.get_attribute("value")
-print(day)
-input()
+data = []
+find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
+data.append(find)
+sdata = [s.split('\n') for s in data]
+
+## Datu sakārtošana
+# eventpos = []
+# event=[]
+# all_events=[]
+# for i in split_data:
+#     if "tiks slēgts" or "ir pieejams" or "atveras" in split_data[i]:
+#         eventpos.append(i)
+#     if len(eventpos) == 2:
+#         for k in range(eventpos[0], eventpos[1]):
+#             event.append(split_data[k])
+#         all_events.append(event)
+#         eventpos = []
+# print(event)
+# input()
+
 
 def log_in():
     sg.theme('DarkAmber')   # Add a touch of color
