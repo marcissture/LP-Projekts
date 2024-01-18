@@ -39,6 +39,8 @@ data = []
 find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
 data.append(find)
 sdata = [s.split('\n') for s in data]
+print(sdata)
+input()
 
 ## Datu sakārtošana
 # eventpos = []
