@@ -1,6 +1,6 @@
 # LP-Projekts
 ## Projekta apraksts
-Projekta uzdevums ir atvieglot studentiem laika plānošanu, vieglākā formātā parādot termiņus darbiem. Programmatūra automātiski iegūst datus no e-studijām un attēlo tos lietotāja saskarnē, kurā dod iespēju aizsūtīt attgādinājumu uz lietātāja ievadītu e-pastu.
+Projekta mērķis ir uzlabot studentu laika plānošanu, piedāvājot vienkāršu veidu, kā sekot līdzi darbu termiņiem. Projekta uzdevums ir izveidot programmatūru, kas automātiski iegūst datus no e-studijām un attēlo tos lietotāja saskarnē, kurā dod iespēju aizsūtīt attgādinājumu uz lietātāja ievadītu e-pastu.
 ## Izmantotās Python bibliotēkas
 ### Selenium
 nepieciešams lai tiktu pie un iegūtu datus no e-studiju vides.
