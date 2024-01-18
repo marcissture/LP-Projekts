@@ -58,47 +58,70 @@ input()
 # input()
 
 
-def log_in():
-    sg.theme('DarkAmber')   # Add a touch of color
+#paraug dati
+event_list = []
+event = ["Projekts", "19.01.24", "Lietotājprogrammas"]
+event_list.append(event)
+event = ["piemers", "20.01.24", "Lietotājprogrammas"]
+event_list.append(event)
+
+def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
+    sg.theme('LightBlue')
     payload = []
-    # All the stuff inside your window.
     layout = [  [sg.Text('Ievadat ortusa informāciju')],
                 [sg.Text('Lietotājvārds'), sg.InputText()],
-                [sg.Text('Parole'), sg.InputText()],
+                [sg.Text('Parole'), sg.Push(),sg.InputText()],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
-    # Create the Window
     window = sg.Window('Log in', layout)
-    # Event Loop to process "events" and get the "values" of the inputs
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Cancel': # if user closes window or clicks cancel
-            break
+        if event == sg.WIN_CLOSED or event == 'Cancel':
+            exit()
         if event == 'Ok':
-            break
+            payload = [values[0],values[1]] #log in dati
+            return payload
 
-    payload = [values[0],values[1]]
-    return payload
+def period():# iegūst e-pastu uz kuru sūtīt info un laika periodu no kura nolasīt info
+    sg.theme('LightBlue')
+    layout = [  [sg.Text('Ievadat e-pastu un laika periodu')],
+                [sg.Text('e-pasts'), sg.InputText()],
+                [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
+                [sg.Button('Ok'), sg.Button('Cancel')] ]
 
-def display_info():
-    sg.theme('DarkAmber')
-    layout = [ [sg.Text('Tuvākais termiņš ir darbam ')],
-               [sg.Text('To vajag iesniegt līdz ')],
-               [sg.Text('Kurss kurā to vajag izdarīt ')],
-               [sg.Text('Saite ')],
+    window = sg.Window('period', layout)
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Cancel':
+            exit()
+        if event == 'Ok':
+            return values
+
+page = 0 #darbu skaitītājs
+
+def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
+    sg.theme('LightBlue')
+    layout = [ [sg.Text(f'Tuvākais termiņš ir:'), sg.Push(),sg.Text(event_list[page][0], font=("bold"))],
+               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(event_list[page][1], font=("bold"))],
+               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(event_list[page][2], font=("bold"))],
                [sg.Button('Atgādināt'), sg.Button('Tālāk')] ]
     
     window = sg.Window('Darbi', layout)
 
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Cancel': # if user closes window or clicks cancel
-            break
+        if event == sg.WIN_CLOSED or event == 'Cancel':
+            exit()
         if event == 'Atgādināt':
             #send_email() #fun
             break
         if event == 'Tālāk':
-            display_info() #fun tikai citi mainīgie
-            break
-    
-    return
+            try:
+                display_info((page+1)) #rekursijas princips datu izskatīšanai
+                break
+            except IndexError:
+                break
+
+log_in()
+period()
+display_info(page)
