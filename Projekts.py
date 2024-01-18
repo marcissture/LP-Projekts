@@ -47,14 +47,6 @@ def scrape(usr,pwd): # Izvilkšana
         elif i==len(data)-1:
             nextpos = i
             all_events.append(data[pos-2:nextpos])
-        else : continue
-
-#paraug dati
-event_list = []
-event = ["Projekts", "19.01.24", "Lietotājprogrammas"]
-event_list.append(event)
-event = ["piemers", "20.01.24", "Lietotājprogrammas"]
-event_list.append(event)
 
 def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     sg.theme('LightBlue')
@@ -90,11 +82,11 @@ def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolas
 
 page = 0 #darbu skaitītājs
 
-def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
+def display_info(page,all_events):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
     sg.theme('LightBlue')
-    layout = [ [sg.Text(f'Tuvākais termiņš ir:'), sg.Push(),sg.Text(event_list[page][0], font=("bold"))],
-               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(event_list[page][1], font=("bold"))],
-               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(event_list[page][2], font=("bold"))],
+    layout = [ [sg.Text(f'Tuvākais darbs ir:'), sg.Push(),sg.Text(all_events[page][0], font=("bold"))],
+               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(all_events[page][1], font=("bold"))],
+               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(all_events[page][3], font=("bold"))],
                [sg.Button('Atgādināt'), sg.Button('Tālāk')] ]
     
     window = sg.Window('Darbi', layout)
