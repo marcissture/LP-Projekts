@@ -9,8 +9,7 @@ from email.mime.multipart import MIMEMultipart
 import schedule
 import datetime
 
-def scrape(usr, pwd):
-    # Sākuma lapas atvēršana
+def scrape(usr,pwd): # Izvilkšana
     service = Service()
     option = webdriver.ChromeOptions()
     driver = webdriver.Chrome(service=service, options=option)
@@ -18,7 +17,6 @@ def scrape(usr, pwd):
     driver.get(url)
     time.sleep(2)
 
-    # Pieslēgšanās
     find = driver.find_element(By.ID, "submit")
     find.click()
     find = driver.find_element(By.ID, "IDToken1")
@@ -29,9 +27,6 @@ def scrape(usr, pwd):
     find.click()
     find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
     find.click()
-
-    # Izvilkšana
-    data = []
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
     data = find.split('\n')
 
@@ -54,13 +49,6 @@ def scrape(usr, pwd):
         else : continue
     return all_events
 
-# #paraug dati
-event_list = []
-event = ["Projekts", "piektdiena, 2. februāris, 09:00", "Lietotājprogrammas"]
-event_list.append(event)
-event = ["piemers", "piektdiena, 9. februāris, 09:00", "Lietotājprogrammas"]
-event_list.append(event)
-
 def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     sg.theme('LightBlue')
     payload = []
@@ -78,11 +66,11 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
             payload = [values[0],values[1]] #log in dati
             return payload
 
-def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolasīt info būtu bijis nice ja mēs izpildītu ātrāk
+def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolasīt info
     sg.theme('LightBlue')
     layout = [  [sg.Text('Ievadat e-pastu un laika periodu')],
                 [sg.Text('e-pasts'), sg.InputText()],
-                # [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
+                [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('period', layout)
@@ -97,9 +85,9 @@ page = 0 #darbu skaitītājs
 
 def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
     sg.theme('LightBlue')
-    layout = [ [sg.Text(f'Tuvākais termiņš ir:'), sg.Push(),sg.Text(event_list[page][0], font=("bold"))],
-               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(event_list[page][1], font=("bold"))],
-               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(event_list[page][2], font=("bold"))],
+    layout = [ [sg.Text(f'Tuvākais darbs ir:'), sg.Push(),sg.Text(all_events[page][0], font=("bold"))],
+               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(all_events[page][1], font=("bold"))],
+               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(all_events[page][3], font=("bold"))],
                [sg.Button('Atgādināt'), sg.Button('Tālāk')] ]
     
     window = sg.Window('Darbi', layout)
@@ -123,8 +111,8 @@ def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt a
                 exit()
 
 def send_email(date):
-    sender_email = 'ortusAtgadinajums@gmail.com'
-    sender_password = 'MstuKmil1!'
+    sender_email = '' #šeit ievieto epastu no kura tiks sūtīti atgādinājumi
+    sender_password = '' #konta/aplikācijas parole
     receiver_email = notif_email
     subject = f'Atādinājums par darbu {event_list[2]}' #add name
     body = f'Jums ir jaiesniedz {event_list[0]} līdz {event_list[1]}' #add name and time
@@ -156,5 +144,5 @@ while True:
 
     usr, pwd = log_in()
     notif_email = period()
-    # event_list = scrape(usr, pwd)
+    event_list = scrape(usr, pwd)
     display_info(page, event_list)
