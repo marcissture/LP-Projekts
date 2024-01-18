@@ -27,7 +27,6 @@ def scrape(usr,pwd): # Izvilkšana
     find.click()
     find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
     find.click()
-
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
     data = find.split('\n')
 
@@ -47,6 +46,8 @@ def scrape(usr,pwd): # Izvilkšana
         elif i==len(data)-1:
             nextpos = i
             all_events.append(data[pos-2:nextpos])
+        else : continue
+    return all_events
 
 def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     sg.theme('LightBlue')
@@ -65,11 +66,11 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
             payload = [values[0],values[1]] #log in dati
             return payload
 
-def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolasīt info būtu bijis nice ja mēs izpildītu ātrāk
+def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolasīt info
     sg.theme('LightBlue')
     layout = [  [sg.Text('Ievadat e-pastu un laika periodu')],
                 [sg.Text('e-pasts'), sg.InputText()],
-                # [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
+                [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('period', layout)
@@ -82,7 +83,7 @@ def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolas
 
 page = 0 #darbu skaitītājs
 
-def display_info(page,all_events):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
+def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
     sg.theme('LightBlue')
     layout = [ [sg.Text(f'Tuvākais darbs ir:'), sg.Push(),sg.Text(all_events[page][0], font=("bold"))],
                [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(all_events[page][1], font=("bold"))],
@@ -96,8 +97,12 @@ def display_info(page,all_events):#attēlo iegūtos datus ar opciju nosūtīt at
         if event == sg.WIN_CLOSED or event == 'Cancel':
             exit()
         if event == 'Atgādināt':
-            #send_email() #fun
-            break
+            try:
+                send_email(event_list[page]) #fun
+                display_info((page+1))
+                break
+            except IndexError:
+                break
         if event == 'Tālāk':
             try:
                 display_info((page+1)) #rekursijas princips datu izskatīšanai
@@ -105,12 +110,12 @@ def display_info(page,all_events):#attēlo iegūtos datus ar opciju nosūtīt at
             except IndexError:
                 exit()
 
-def send_email(usr, pwd):
-    sender_email = 'ortusAtgadinajums@gmail.com'
-    sender_password = 'MstuKmil1!'
+def send_email(date):
+    sender_email = '' #šeit ievieto epastu no kura tiks sūtīti atgādinājumi
+    sender_password = '' #konta/aplikācijas parole
     receiver_email = notif_email
-    subject = 'Atādinājums par darbu' #add name
-    body = 'Jums ir jaiesniedz' + + ' līdz' #add name and time
+    subject = f'Atādinājums par darbu {event_list[2]}' #add name
+    body = f'Jums ir jaiesniedz {event_list[0]} līdz {event_list[1]}' #add name and time
 
     message = MIMEMultipart()
     message['From'] = sender_email
@@ -127,6 +132,8 @@ def send_email(usr, pwd):
     except Exception as e:
         return
 
+    date_info = event_list[1].split(',')
+    print(date_info)
     scheduled_date = datetime(2024, 1, 20, 12, 0, 0)
     schedule.day.at("12:00").do(send_email)
 
@@ -137,5 +144,5 @@ while True:
 
     usr, pwd = log_in()
     notif_email = period()
-    scrape(usr, pwd)
-    display_info(page)
+    event_list = scrape(usr, pwd)
+    display_info(page, event_list)
