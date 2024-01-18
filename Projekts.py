@@ -1,47 +1,35 @@
-from os import system
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import PySimpleGUI as sg
 import time
-from getpass import getpass
 # from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.webdriver.support import expected_conditions as ec
 # strftime(%d) iespejams vajag ar "%d"
 
-# Payload ievade
-usr = input("Lūdzu ievadīt lietotājvārdu: ")
-pwd = getpass(prompt="Lūdzu ievadīt paroli: ")
-system('clear')
+def scrape(): # Izvilkšana
+    service = Service()
+    option = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(service=service, options=option)
+    url = "https://estudijas.rtu.lv/"
+    driver.get(url)
+    time.sleep(2)
 
-# Sākuma lapas atvēršana
-service = Service()
-option = webdriver.ChromeOptions()
-driver = webdriver.Chrome(service=service, options=option)
-url = "https://estudijas.rtu.lv/"
-driver.get(url)
-time.sleep(2)
+    find = driver.find_element(By.ID, "submit")
+    find.click()
+    find = driver.find_element(By.ID, "IDToken1")
+    find.send_keys(usr)
+    find = driver.find_element(By.ID, "IDToken2")
+    find.send_keys(pwd)
+    find = driver.find_element(By.NAME, "Login.Submit")
+    find.click()
+    find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
+    find.click()
 
-# Pieslēgšanās
-find = driver.find_element(By.ID, "submit")
-find.click()
-find = driver.find_element(By.ID, "IDToken1")
-find.send_keys(usr)
-find = driver.find_element(By.ID, "IDToken2")
-find.send_keys(pwd)
-find = driver.find_element(By.NAME, "Login.Submit")
-find.click()
-find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
-find.click()
-
-# Izvilkšana
-data = []
-find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
-data.append(find)
-sdata = [s.split('\n') for s in data]
-print(sdata)
-input()
-
+    data = []
+    find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
+    data.append(find)
+    print(data)
 ## Datu sakārtošana
 # eventpos = []
 # event=[]
@@ -70,7 +58,7 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     payload = []
     layout = [  [sg.Text('Ievadat ortusa informāciju')],
                 [sg.Text('Lietotājvārds'), sg.InputText()],
-                [sg.Text('Parole'), sg.Push(),sg.InputText()],
+                [sg.Text('Parole'), sg.Push(), sg.InputText(password_char='*')],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('Log in', layout)
@@ -123,5 +111,6 @@ def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājum
                 break
 
 log_in()
+scrape()
 period()
 display_info(page)
