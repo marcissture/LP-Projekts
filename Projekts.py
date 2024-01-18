@@ -33,21 +33,21 @@ def scrape(usr,pwd): # Izvilkšana
     # Datu sakārtošana
     pos = 0
     nextpos = 0
-    all_events=[]
+    event_list=[]
     for i in range(len(data)):
         if "Kursa notikums" in data[i] and pos == 0:
             pos = i
         elif "Kursa notikums" in data[i] and pos != 0:
             nextpos = i    
         elif pos and nextpos !=0:
-            all_events.append(data[pos-2:nextpos-2])
+            event_list.append(data[pos-2:nextpos-2])
             pos = nextpos
             nextpos = 0
         elif i==len(data)-1:
             nextpos = i
-            all_events.append(data[pos-2:nextpos])
+            event_list.append(data[pos-2:nextpos])
         else : continue
-    return all_events
+    return event_list
 
 def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     sg.theme('LightBlue')
@@ -85,9 +85,9 @@ page = 0 #darbu skaitītājs
 
 def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
     sg.theme('LightBlue')
-    layout = [ [sg.Text(f'Tuvākais darbs ir:'), sg.Push(),sg.Text(all_events[page][0], font=("bold"))],
-               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(all_events[page][1], font=("bold"))],
-               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(all_events[page][3], font=("bold"))],
+    layout = [ [sg.Text(f'Tuvākais darbs ir:'), sg.Push(),sg.Text(event_list[page][0], font=("bold"))],
+               [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(event_list[page][1], font=("bold"))],
+               [sg.Text(f'Kurss kurā to vajag izdarīt:'), sg.Push(),sg.Text(event_list[page][3], font=("bold"))],
                [sg.Button('Atgādināt'), sg.Button('Tālāk')] ]
     
     window = sg.Window('Darbi', layout)
@@ -99,18 +99,18 @@ def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt a
         if event == 'Atgādināt':
             try:
                 send_email(event_list[page]) #fun
-                display_info((page+1))
+                display_info((page+1), event_list)
                 break
             except IndexError:
                 break
         if event == 'Tālāk':
             try:
-                display_info((page+1)) #rekursijas princips datu izskatīšanai
+                display_info((page+1), event_list) #rekursijas princips datu izskatīšanai
                 break
             except IndexError:
                 exit()
 
-def send_email(date):
+def send_email(event_list):
     sender_email = '' #šeit ievieto epastu no kura tiks sūtīti atgādinājumi
     sender_password = '' #konta/aplikācijas parole
     receiver_email = notif_email
@@ -132,17 +132,44 @@ def send_email(date):
     except Exception as e:
         return
 
+    month_mapping = {
+    'janvāris': 1,
+    'februāris': 2,
+    'marts': 3,
+    'aprīlis': 4,
+    'maijs': 5,
+    'jūnijs': 6,
+    'jūlijs': 7,
+    'augusts': 8,
+    'septembris': 9,
+    'oktobris': 10,
+    'novembris': 11,
+    'decembris': 12
+    }
+
+    parts = event_list[1].split(', ')
+
+    day = int(parts[1].split('.')[0]) #iegūst dienas skaitli
+    month_name = parts[1].split(', ')[1].split(', ')[0].lower()
+    month = month_mapping.get(month_name)  #iegūst mēneša skaitli
+
     date_info = event_list[1].split(',')
     print(date_info)
-    scheduled_date = datetime(2024, 1, 20, 12, 0, 0)
-    schedule.day.at("12:00").do(send_email)
+    scheduled_date = datetime(2024, month, day, 12, 0, 0)
+    schedule.every().at("12:00").do(send_email,scheduled_date)
+    return display_info(page+1,event_list)
+
+exe = False
 
 # Keep the script running to allow the scheduler to work
 while True:
     schedule.run_pending()
     time.sleep(1)
 
-    usr, pwd = log_in()
-    notif_email = period()
-    event_list = scrape(usr, pwd)
-    display_info(page, event_list)
+    if not exe:
+        usr, pwd = log_in()
+        notif_email = period()
+        event_list = scrape(usr, pwd)
+        display_info(page, event_list)
+
+        exe = True
