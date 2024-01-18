@@ -1,34 +1,22 @@
-from os import system
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import PySimpleGUI as sg
 import time
-from getpass import getpass
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import schedule
 import datetime
-# from selenium.webdriver.support.wait import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as ec
-# strftime(%d) iespejams vajag ar "%d"
 
-# # Payload ievade
-# usr = input("Lūdzu ievadīt lietotājvārdu: ")
-# pwd = getpass(prompt="Lūdzu ievadīt paroli: ")
-# system('clear')
+def scrape(usr,pwd): # Izvilkšana
+    service = Service()
+    option = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(service=service, options=option)
+    url = "https://estudijas.rtu.lv/"
+    driver.get(url)
+    time.sleep(2)
 
-# Sākuma lapas atvēršana
-service = Service()
-option = webdriver.ChromeOptions()
-driver = webdriver.Chrome(service=service, options=option)
-url = "https://estudijas.rtu.lv/"
-driver.get(url)
-time.sleep(2)
-
-def scrape(usr, pwd):
-    # Pieslēgšanās
     find = driver.find_element(By.ID, "submit")
     find.click()
     find = driver.find_element(By.ID, "IDToken1")
@@ -40,18 +28,33 @@ def scrape(usr, pwd):
     find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
     find.click()
 
-    # Izvilkšana
-    data = []
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
-    data.append(find)
-    sdata = (s.split('\n') for s in data)
-    print(sdata) #sadalit info 2d masiva
+    data = find.split('\n')
 
-#paraug dati
+    # Datu sakārtošana
+    pos = 0
+    nextpos = 0
+    all_events=[]
+    for i in range(len(data)):
+        if "Kursa notikums" in data[i] and pos == 0:
+            pos = i
+        elif "Kursa notikums" in data[i] and pos != 0:
+            nextpos = i    
+        elif pos and nextpos !=0:
+            all_events.append(data[pos-2:nextpos-2])
+            pos = nextpos
+            nextpos = 0
+        elif i==len(data)-1:
+            nextpos = i
+            all_events.append(data[pos-2:nextpos])
+        else : continue
+    return all_events
+
+# #paraug dati
 event_list = []
-event = ["Projekts", "19.01.24", "Lietotājprogrammas"]
+event = ["Projekts", "piektdiena, 2. februāris, 09:00", "Lietotājprogrammas"]
 event_list.append(event)
-event = ["piemers", "20.01.24", "Lietotājprogrammas"]
+event = ["piemers", "piektdiena, 9. februāris, 09:00", "Lietotājprogrammas"]
 event_list.append(event)
 
 def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
@@ -59,7 +62,7 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     payload = []
     layout = [  [sg.Text('Ievadat ortusa informāciju')],
                 [sg.Text('Lietotājvārds'), sg.InputText()],
-                [sg.Text('Parole'), sg.Push(),sg.InputText()],
+                [sg.Text('Parole'), sg.Push(), sg.InputText(password_char='*')],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('Log in', layout)
@@ -88,7 +91,7 @@ def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolas
 
 page = 0 #darbu skaitītājs
 
-def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
+def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt atgādinājumu 
     sg.theme('LightBlue')
     layout = [ [sg.Text(f'Tuvākais termiņš ir:'), sg.Push(),sg.Text(event_list[page][0], font=("bold"))],
                [sg.Text(f'To vajag iesniegt līdz:'), sg.Push(),sg.Text(event_list[page][1], font=("bold"))],
@@ -102,8 +105,11 @@ def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājum
         if event == sg.WIN_CLOSED or event == 'Cancel':
             exit()
         if event == 'Atgādināt':
-            #send_email() #fun
-            break
+            try:
+                send_email(event_list[page]) #fun
+                break
+            except IndexError:
+                break
         if event == 'Tālāk':
             try:
                 display_info((page+1)) #rekursijas princips datu izskatīšanai
@@ -111,12 +117,12 @@ def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājum
             except IndexError:
                 exit()
 
-def send_email(usr, pwd):
+def send_email(date):
     sender_email = 'ortusAtgadinajums@gmail.com'
     sender_password = 'MstuKmil1!'
     receiver_email = notif_email
-    subject = 'Atādinājums par darbu' #add name
-    body = 'Jums ir jaiesniedz' + + ' līdz' #add name and time
+    subject = f'Atādinājums par darbu {event_list[2]}' #add name
+    body = f'Jums ir jaiesniedz {event_list[0]} līdz {event_list[1]}' #add name and time
 
     message = MIMEMultipart()
     message['From'] = sender_email
@@ -133,6 +139,8 @@ def send_email(usr, pwd):
     except Exception as e:
         return
 
+    date_info = event_list[1].split(',')
+    print(date_info)
     scheduled_date = datetime(2024, 1, 20, 12, 0, 0)
     schedule.day.at("12:00").do(send_email)
 
@@ -141,8 +149,7 @@ while True:
     schedule.run_pending()
     time.sleep(1)
 
-
     usr, pwd = log_in()
     notif_email = period()
-    scrape(usr, pwd)
-    display_info(page)
+    # event_list = scrape(usr, pwd)
+    display_info(page, event_list)
