@@ -1,13 +1,28 @@
+from os import system
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import PySimpleGUI as sg
 import time
+from getpass import getpass
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import schedule
+import datetime
 # from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.webdriver.support import expected_conditions as ec
 # strftime(%d) iespejams vajag ar "%d"
 
-def scrape(): # Izvilkšana
+# Sākuma lapas atvēršana
+service = Service()
+option = webdriver.ChromeOptions()
+driver = webdriver.Chrome(service=service, options=option)
+url = "https://estudijas.rtu.lv/"
+driver.get(url)
+time.sleep(2)
+
+def scrape(usr,pwd): # Izvilkšana
     service = Service()
     option = webdriver.ChromeOptions()
     driver = webdriver.Chrome(service=service, options=option)
@@ -29,22 +44,8 @@ def scrape(): # Izvilkšana
     data = []
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
     data.append(find)
-    print(data)
-## Datu sakārtošana
-# eventpos = []
-# event=[]
-# all_events=[]
-# for i in split_data:
-#     if "tiks slēgts" or "ir pieejams" or "atveras" in split_data[i]:
-#         eventpos.append(i)
-#     if len(eventpos) == 2:
-#         for k in range(eventpos[0], eventpos[1]):
-#             event.append(split_data[k])
-#         all_events.append(event)
-#         eventpos = []
-# print(event)
-# input()
-
+    sdata = (s.split('\n') for s in data)
+    print(sdata) #sadalit info 2d masiva
 
 #paraug dati
 event_list = []
@@ -70,11 +71,11 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
             payload = [values[0],values[1]] #log in dati
             return payload
 
-def period():# iegūst e-pastu uz kuru sūtīt info un laika periodu no kura nolasīt info
+def period():# iegūst e-pastu uz kuru sūtīt info #laika periodu no kura nolasīt info būtu bijis nice ja mēs izpildītu ātrāk
     sg.theme('LightBlue')
     layout = [  [sg.Text('Ievadat e-pastu un laika periodu')],
                 [sg.Text('e-pasts'), sg.InputText()],
-                [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
+                # [sg.CalendarButton('Līdz kuram datumam', target='-CAL1-', pad=None, key='-CAL1-', format=('%Y-%m-%d'))],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('period', layout)
@@ -108,9 +109,39 @@ def display_info(page):#attēlo iegūtos datus ar opciju nosūtīt atgādinājum
                 display_info((page+1)) #rekursijas princips datu izskatīšanai
                 break
             except IndexError:
-                break
+                exit()
 
-log_in()
-scrape()
-period()
-display_info(page)
+def send_email(usr, pwd):
+    sender_email = 'ortusAtgadinajums@gmail.com'
+    sender_password = 'MstuKmil1!'
+    receiver_email = notif_email
+    subject = 'Atādinājums par darbu' #add name
+    body = 'Jums ir jaiesniedz' + + ' līdz' #add name and time
+
+    message = MIMEMultipart()
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    message['Subject'] = subject
+
+    message.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+    except Exception as e:
+        return
+
+    scheduled_date = datetime(2024, 1, 20, 12, 0, 0)
+    schedule.day.at("12:00").do(send_email)
+
+# Keep the script running to allow the scheduler to work
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+
+    usr, pwd = log_in()
+    notif_email = period()
+    scrape(usr, pwd)
+    display_info(page)
