@@ -16,3 +16,6 @@ Nepieciešams lai notiektu, kad ir jaizsūta atgādinājums.
 Nepieciešams lai varētu izsūtīt atgādinājumu. Saderības nolūkiem šajā gadījumā tiek izmantots SMTP protokols nevis kāda noteikta e-pasta pakalpojuma API.
 ## Izmatotās metodes
 Lietotājs ievada savus ortus datus, lai tiktu pie e-studijām. Tālāk lietotājam ir jāievada e-pasts uz kuru tiks nosūtīts atgādinājums par darba termiņa beigām, ja to izvēlēsies. Pēc datu ievades tiek iegūti dati (darba nosaukums, kurss un termiņš) no e-studijas vides un tie tiek attēloti lietotāja saskarnē. Lietotājs pēc izvēles var pieprasīt atgādinājumu, kurš tiks atsūtīts dienu pirms darba nodošanas 12.00. Katrs no šiem soļiem ir definēts kā funkcija, kas tiek attiecīgi izsaukta atkarībā no lietotāja darbībām.
+![programmatūras dzīves cikls](https://github.com/marcissture/LP-Projekts/assets/79980809/8cc694e8-311e-4fec-b1fc-b69df62b99fc)
+## Secinājumi
+izveidotais labāk strādātu ar datubāzi, jo nepatērētu datora resursus un atgādinājuma sistēma varētu strādāt efektīvāk.
