@@ -9,7 +9,8 @@ from email.mime.multipart import MIMEMultipart
 import schedule
 import datetime
 
-def scrape(usr,pwd): # Izvilkšana
+def scrape(usr, pwd):
+    # Sākuma lapas atvēršana
     service = Service()
     option = webdriver.ChromeOptions()
     driver = webdriver.Chrome(service=service, options=option)
@@ -17,6 +18,7 @@ def scrape(usr,pwd): # Izvilkšana
     driver.get(url)
     time.sleep(2)
 
+    # Pieslēgšanās
     find = driver.find_element(By.ID, "submit")
     find.click()
     find = driver.find_element(By.ID, "IDToken1")
@@ -28,6 +30,8 @@ def scrape(usr,pwd): # Izvilkšana
     find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
     find.click()
 
+    # Izvilkšana
+    data = []
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
     data = find.split('\n')
 
@@ -107,6 +111,7 @@ def display_info(page, event_list):#attēlo iegūtos datus ar opciju nosūtīt a
         if event == 'Atgādināt':
             try:
                 send_email(event_list[page]) #fun
+                display_info((page+1))
                 break
             except IndexError:
                 break
