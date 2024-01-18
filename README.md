@@ -3,7 +3,7 @@
 Projekta mērķis ir uzlabot studentu laika plānošanu, piedāvājot vienkāršu veidu, kā sekot līdzi darbu termiņiem. Projekta uzdevums ir izveidot programmatūru, kas automātiski iegūst datus no e-studijām un attēlo tos lietotāja saskarnē, kurā dod iespēju aizsūtīt attgādinājumu uz lietātāja ievadītu e-pastu.
 ## Izmantotās Python bibliotēkas
 ### Selenium
-Nepieciešams lai tiktu pie un iegūtu datus no e-studiju vides, izmantojot HTML identifikatorus kā ID, NAME, LINK_TEXT un XPATH
+Nepieciešams lai tiktu pie un iegūtu datus no e-studiju vides, izmantojot HTML identifikatorus - ID, NAME, LINK_TEXT un XPATH
 ### time
 Nepieciešams lai ievadītu pauzes kodā, šajā gadījumā tas tiek izmantots, lai pārlūks paspēj ielādēt lapu pirms tālākas koda izpildes.
 ### PySimpleGUI
