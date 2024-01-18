@@ -14,11 +14,6 @@ import datetime
 # from selenium.webdriver.support import expected_conditions as ec
 # strftime(%d) iespejams vajag ar "%d"
 
-# # Payload ievade
-# usr = input("Lūdzu ievadīt lietotājvārdu: ")
-# pwd = getpass(prompt="Lūdzu ievadīt paroli: ")
-# system('clear')
-
 # Sākuma lapas atvēršana
 service = Service()
 option = webdriver.ChromeOptions()
@@ -27,8 +22,14 @@ url = "https://estudijas.rtu.lv/"
 driver.get(url)
 time.sleep(2)
 
-def scrape(usr, pwd):
-    # Pieslēgšanās
+def scrape(usr,pwd): # Izvilkšana
+    service = Service()
+    option = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(service=service, options=option)
+    url = "https://estudijas.rtu.lv/"
+    driver.get(url)
+    time.sleep(2)
+
     find = driver.find_element(By.ID, "submit")
     find.click()
     find = driver.find_element(By.ID, "IDToken1")
@@ -40,7 +41,6 @@ def scrape(usr, pwd):
     find = driver.find_element(By.LINK_TEXT, "Atvērt kalendāru...")
     find.click()
 
-    # Izvilkšana
     data = []
     find = driver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[2]/div/div/section/div/div/div[1]/div/div[2]/div").text
     data.append(find)
@@ -59,7 +59,7 @@ def log_in(): #iegust log in informāciju lai nolasītu no svarīgā konta
     payload = []
     layout = [  [sg.Text('Ievadat ortusa informāciju')],
                 [sg.Text('Lietotājvārds'), sg.InputText()],
-                [sg.Text('Parole'), sg.Push(),sg.InputText()],
+                [sg.Text('Parole'), sg.Push(), sg.InputText(password_char='*')],
                 [sg.Button('Ok'), sg.Button('Cancel')] ]
 
     window = sg.Window('Log in', layout)
@@ -140,7 +140,6 @@ def send_email(usr, pwd):
 while True:
     schedule.run_pending()
     time.sleep(1)
-
 
     usr, pwd = log_in()
     notif_email = period()
